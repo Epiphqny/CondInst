@@ -32,6 +32,6 @@ python train_net.py --num-gpus 8 --config-file configs/CondInst/MS_R_101_3x.yaml
 ```
 
 ## Results(model still in training,will update new result once finished)
-After training 2 epochs on the coco dataset using the resnet-101 backbone, the mAP is 0.200 on COCO val2017 dataset:
+After training 8 epochs on the coco dataset using the resnet-101 backbone, the mAP is 0.282 on COCO val2017 dataset:
 ![](AP.jpg)
 
