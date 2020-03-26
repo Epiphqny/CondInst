@@ -30,6 +30,9 @@ Multi GPU(for example 8):
 ```
 python train_net.py --num-gpus 8 --config-file configs/CondInst/MS_R_101_3x.yaml --eval-only MODEL.WEIGHTS /path/to/checkpoint_file
 ```
+## Weights
+Trained model can be download in 
+https://drive.google.com/open?id=1CEGsi306GUH_v2ybh5lsLhWN1nBpxv24
 
 ## Results
 After training 36 epochs on the coco dataset using the resnet-101 backbone, the mAP is 0.351 on COCO val2017 dataset:
