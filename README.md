@@ -1,5 +1,5 @@
 # CondInst
-This repository is an unofficial pytorch implementation of [Conditional Convolutions for Instance Segmentation](https://arxiv.org/abs/2003.05664)
+This repository is an unofficial pytorch implementation of [Conditional Convolutions for Instance Segmentation](https://arxiv.org/abs/2003.05664). The model with ResNet-101 backbone achieves 35.1 mAP on COCO val2017 set.
 
 ## Install
 The code is based on [detectron2](https://github.com/facebookresearch/detectron2). Please check [Install.md](https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md) for installation instructions.
@@ -31,7 +31,12 @@ Multi GPU(for example 8):
 python train_net.py --num-gpus 8 --config-file configs/CondInst/MS_R_101_3x.yaml --eval-only MODEL.WEIGHTS /path/to/checkpoint_file
 ```
 
-## Results(model still in training,will update new result once finished)
-After training - epochs on the coco dataset using the resnet-101 backbone, the mAP is 0.350 on COCO val2017 dataset:
-![](AP.jpg)
+## Results
+After training 36 epochs on the coco dataset using the resnet-101 backbone, the mAP is 0.351 on COCO val2017 dataset:
+
+<img src="AP.jpg">
+
+## Visualization
+
+<img src="condinst.png" width="2000">
 
