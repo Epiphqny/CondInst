@@ -17,6 +17,8 @@ python train_net.py --num-gpus 8 --config-file configs/CondInst/MS_R_101_3x.yaml
 ```
 Please adjust the IMS_PER_BATCH in the config file according to the GPU memory.
 
+## Notes
+I have replaced the original upsample with the aligned upsample according to the [author's issue](https://github.com/Epiphqny/CondInst/issues/1), and use the upsampled mask to calculate loss, this brings more gains but may cost more GPU memory, if you do not have much memory, use the original unupsampled version to calculate loss.
 
 ## Inference
 First replace the original detectron2 installed postprocessing.py with the [file](https://github.com/Epiphqny/CondInst/blob/master/postprocessing.py) in this repository, as the original file only suit for ROI obatined masks.
