@@ -9,7 +9,7 @@ from fvcore.nn import sigmoid_focal_loss_jit
 
 from fcos.utils.comm import reduce_sum
 from fcos.layers import ml_nms
-from detectron2.layers import interpolate
+#from detectron2.layers import interpolate
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,30 @@ Naming convention:
     
 """
 
+def aligned_bilinear(tensor, factor):
+    assert tensor.dim() == 4
+    assert factor >= 1
+    assert int(factor) == factor
+
+    if factor == 1:
+        return tensor
+
+    h, w = tensor.size()[2:]
+    tensor = F.pad(tensor, pad=(0, 1, 0, 1), mode="replicate")
+    oh = factor * h + 1
+    ow = factor * w + 1
+    tensor = F.interpolate(
+        tensor, size=(oh, ow),
+        mode='bilinear',
+        align_corners=True
+    )
+    tensor = F.pad(
+        tensor, pad=(factor // 2, 0, factor // 2, 0),
+        mode="replicate"
+    )
+
+    return tensor[:, :, :oh - 1, :ow - 1]
+        
 
 def compute_ctrness_targets(reg_targets):
     if len(reg_targets) == 0:
@@ -362,8 +386,9 @@ class FCOSOutputs(object):
             
             conv1 = F.conv2d(mask,weights1,bias1).relu()
             conv2 = F.conv2d(conv1, weights2, bias2, groups = ins_num).relu()
-            masks_per_image = F.conv2d(conv2, weights3, bias3, groups = ins_num).sigmoid()
-            masks = interpolate(masks_per_image, size = (o_h,o_w), mode="bilinear", align_corners=False)
+            masks_per_image = F.conv2d(conv2, weights3, bias3, groups = ins_num)
+            #masks = interpolate(masks_per_image, size = (o_h,o_w), mode="bilinear", align_corners=False).sigmoid()
+            masks = aligned_bilinear(masks_per_image, self.strides[0]).sigmoid()
             masks = masks[:, :, :input_h, :input_w].permute(1,0,2,3)
             boxlist.pred_masks = masks
         return boxlists
@@ -469,10 +494,12 @@ class FCOSOutputs(object):
             n, h, w = mask_t.shape
             mask = mask_t.new_zeros((n, r_h, r_w))
             mask[:, :h, :w] = mask_t
-            resized_mask = interpolate(
-                input=mask.float().unsqueeze(0), size=(m_h, m_w), mode="bilinear", align_corners=False,
-                )[0].gt(0)
-            masks.append(resized_mask)
+            #resized_mask = aligned_bilinear(mask.float().unsqueeze(0), m_h/r_h)[0].gt(0)
+            #resized_mask = interpolate(
+            #    input=mask.float().unsqueeze(0), size=(m_h, m_w), mode="bilinear", align_corners=False,
+            #    )[0].gt(0)
+            #masks.append(resized_mask)
+            masks.append(mask)
         return masks
 
     def dice_loss(self,input, target):
@@ -570,8 +597,9 @@ class FCOSOutputs(object):
                 bias3 = controllers[:,168:169].flatten()
                 conv1 = F.conv2d(mask_feat,weights1,bias1).relu()
                 conv2 = F.conv2d(conv1, weights2, bias2, groups = ins_num).relu()
-                masks_per_image = F.conv2d(conv2, weights3, bias3, groups = ins_num)[0].sigmoid()
-            
+                #masks_per_image = F.conv2d(conv2, weights3, bias3, groups = ins_num)[0].sigmoid()
+                masks_per_image = F.conv2d(conv2, weights3, bias3, groups = ins_num) 
+                masks_per_image = aligned_bilinear(masks_per_image, self.strides[0])[0].sigmoid()         
                 for j in range(ins_num):
                     ind = inds[j]
                     mask_gt = masks_t[i][matched_idxes[ind]].float()
